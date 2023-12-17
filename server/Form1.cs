@@ -134,6 +134,7 @@ namespace server
                         client.Socket.Close(); // Close socket before removing client
                         connectedClients.Remove(client);
                         logs.AppendText("Client " + client.Username + " disconnected.\n");
+                        User_logs.AppendText(client.Username + " disconnected.\n");
                     }
                 }
                 catch
@@ -141,6 +142,7 @@ namespace server
                     if (!terminating)
                     {
                         logs.AppendText("Client " + client.Username + " has disconnected.\n");
+                        User_logs.AppendText(client.Username + " disconnected.\n");
                     }
 
                     client.Socket.Close();
@@ -213,8 +215,10 @@ namespace server
             switch (messageType)
             {
                 case "CONNECT":
+
                     client.Username = messageContent;
                     SendToAllClients(client.Username + " connected.\n");
+                    User_logs.AppendText(client.Username + " connected.\n");
                     break;
                 case "SUBSCRIBE":
                     client.Subscriptions.Add(messageContent);
