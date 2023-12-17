@@ -128,7 +128,7 @@ namespace server
                     string incomingMessage = Encoding.Default.GetString(buffer);
                     incomingMessage = incomingMessage.Substring(0, incomingMessage.IndexOf("\0"));
                     ProcessMessage(client, incomingMessage);
-                    connected = false;
+                    //connected = false;
                     if (!connected)
                     {
                         client.Socket.Close(); // Close socket before removing client
@@ -172,12 +172,23 @@ namespace server
 
         private void SendToChannel(string message, List<string> subscriptions)
         {
+            string[] parts = message.Split(':');
+            string channel = parts[2];
+            string actualMessage = parts[1];
             foreach (Client client in connectedClients)
             {
                 if (client.Subscriptions.Any(subscription => subscriptions.Contains(subscription)))
                 {
                     try
                     {
+                        if (channel == "IF100")
+                        {
+                            IF_logs.AppendText(client.Username + ": " + actualMessage + "\n");
+                        }
+                        else if (channel == "SPS101")
+                        {
+                            SPS_logs.AppendText(client.Username + ": " + actualMessage + "\n");
+                        }
                         byte[] data = Encoding.Default.GetBytes(message);
                         client.Socket.Send(data);
                     }
@@ -189,6 +200,7 @@ namespace server
                     }
                 }
             }
+
             logs.AppendText("Server: " + message + " (sent to channel)\n");
         }
 
@@ -213,7 +225,7 @@ namespace server
                     logs.AppendText("Client " + client.Username + " unsubscribed from channel " + messageContent + "\n");
                     break;
                 case "MESSAGE":
-                    SendToChannel(messageContent, client.Subscriptions);
+                    SendToChannel(message, client.Subscriptions); // Send message with channel prefix
                     break;
                 default:
                     logs.AppendText("Unknown message type: " + messageType + "\n");
